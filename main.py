@@ -16,8 +16,10 @@ class MyClass:
 
     def run(self):
         if self.conf.image_type == "rgb":
+            self.rgb_func.print(self.conf)
             self.rgb_func.run()
         elif self.conf.image_type == "hyper":
+            self.hyper_func.print(self.conf)
             self.hyper_func.run()
         else:
             raise "image type error!"
