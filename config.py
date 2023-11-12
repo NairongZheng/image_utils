@@ -7,7 +7,17 @@ date:20231107
 
 class Variables:
     def __init__(self):
-        pass
+        self.label_mapping = {
+            "water": [0, 0, 255],
+            "baresoil": [139, 0, 0],
+            "road": [83, 134, 139],
+            "industry": [255, 0, 0],
+            "vegetation": [0, 255, 0],
+            "residential": [205, 173, 0],
+            "plantingarea": [139, 105, 20],
+            "other": [178, 34, 34],
+            "farms": [0, 139, 139],
+        }
 
 
 class Config:
@@ -31,18 +41,42 @@ class Config:
         rate: 截断拉伸的倍数(一般2.5或者3都ok)
         """
         para_dict = {
-            "image_path": r"D:\code_python\utils\image_utils\example\sar_images",
-            "save_path": r"D:\code_python\utils\image_utils\example\labels",
+            "image_path": r"",
+            "save_path": r"",
             "rate": 3,
         }
         return para_dict
 
     def get_task_1_para(self):
         para_dict = {
-            "image_path": r"D:\code_python\utils\image_utils\example\sar_images",
+            "image_path": r"",
+            "save_path": r"",
             "size": 512,
             "stride": 256,
             "pad_zero": False,
+        }
+        return para_dict
+
+    def get_task_2_para(self):
+        para_dict = {
+            "image_path": r"",
+            "save_path": r"",
+        }
+        return para_dict
+
+    def get_task_3_para(self):
+        para_dict = {
+            "image_path": r"",
+            "save_path": r"",
+            "label_mapping": self.vars.label_mapping,
+        }
+        return para_dict
+
+    def get_task_4_para(self):
+        para_dict = {
+            "image_path": r"",
+            "save_path": r"",
+            "label_mapping": self.vars.label_mapping,
         }
         return para_dict
 

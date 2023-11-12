@@ -25,6 +25,16 @@ class BaseUtils:
     def save_image(self):
         raise NotImplementedError
 
+    def truncation(self, img, rate: float):
+        """
+        将img中大于rate倍均值的全部截断为`rate*mean`
+        """
+        img_mean = np.mean(img)
+        img_new = copy.deepcopy(img)
+        img_new[img > (rate * img_mean + 1e-7)] = rate * img_mean
+        img_new = (img_new / np.max(img_new) + 1e-7) * 255.0
+        return img_new
+
     def pad_image(self, raw_img_shape, small_img_size, strides, pad_zero):
         """
         根据原图尺寸、小图尺寸、步长、是否padding
@@ -85,15 +95,41 @@ class BaseUtils:
             row_idx += 1
         return cut_res_dict
 
-    def truncation(self, img, rate: float):
+    def connect_image(self, small_img_path):
         """
-        将img中大于rate倍均值的全部截断为`rate*mean`
+        拼图
         """
-        img_mean = np.mean(img)
-        img_new = copy.deepcopy(img)
-        img_new[img > (rate * img_mean + 1e-7)] = rate * img_mean
-        img_new = (img_new / np.max(img_new) + 1e-7) * 255.0
-        return img_new
+        pass
+
+    def change_label_3to1(self, label, label_mapping: Dict):
+        """
+        三转成单通道
+        """
+        temp = label.copy()
+        label_mask = np.zeros((label.shape[0], label.shape[1]))
+        for i, (k, v) in enumerate(label_mapping.items()):
+            label_mask[
+                (
+                    ((temp[:, :, 0] == v[0]) & (temp[:, :, 1] == v[1]))
+                    & (temp[:, :, 2] == v[2])
+                )
+            ] = int(k)
+
+        return label_mask
+
+    def change_label_1to3(self, label, label_mapping: Dict):
+        """
+        单通道转三通道
+        """
+        width, height = label.size
+        new_label = np.zeros([height, width, 3])
+        for i, (k, v) in enumerate(label_mapping.items()):
+            globals()[k] = label == i
+        for i, (k, v) in enumerate(label_mapping.items()):
+            new_label[:, :, 0] += globals()[k] * v[0]
+            new_label[:, :, 1] += globals()[k] * v[1]
+            new_label[:, :, 2] += globals()[k] * v[2]
+        return new_label
 
     def run(self):
         raise NotImplementedError
