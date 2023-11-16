@@ -27,6 +27,10 @@ class Config:
         task_type: 本次要对图像进行什么处理, 有以下可选:
             0: 对图像做截断拉伸, 常用于GF3的SAR图像(PIE处理之后)的第一步处理
             1: 切图
+            2: 拼图
+            3: 三通道转单通道
+            4: 单通道转三通道
+            5: 计算iou等语义分割评价指标
         """
         self.image_type: str = "rgb"  # 可选rgb/hyper
         self.task_type: int = 1
@@ -77,6 +81,17 @@ class Config:
             "image_path": r"",
             "save_path": r"",
             "label_mapping": self.vars.label_mapping,
+        }
+        return para_dict
+
+    def get_task_5_para(self):
+        """
+        true_label_path: 真值标签的路径
+        pre_label_path: 预测结果的路径
+        """
+        para_dict = {
+            "true_label_path": r"",
+            "pre_label_path": r"",
         }
         return para_dict
 

@@ -137,6 +137,23 @@ class RGBUtils(BaseUtils):
             self.save_image(lab, os.path.join(self.conf.vars.save_path, label_name))
         return
 
+    def run_task_5_func(self):
+        true_pre_list = []
+        true_lab_names = os.listdir(self.conf.vars.true_label_path).sort()
+        pre_lab_names = os.listdir(self.conf.vars.pre_label_path).sort()
+        for i in range(len(true_lab_names)):
+            true_lab_arr = self.read_image(
+                os.path.join(self.conf.vars.true_label_path, true_lab_names[i])
+            )
+            pre_lab_arr = self.read_image(
+                os.path.join(self.conf.vars.pre_label_path, pre_lab_names[i])
+            )
+            true_pre_list.append(
+                {"true_lab_arr": true_lab_arr, "pre_lab_arr": pre_lab_arr}
+            )
+        self.cal_indicators(true_pre_list, self.conf.vars.label_mapping)
+        return
+
     def run(self):
         """
         run函数, 运行入口

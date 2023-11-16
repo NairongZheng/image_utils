@@ -6,6 +6,7 @@ import math
 from tqdm import tqdm
 from typing import List, Dict
 from config import Config
+import utils
 
 
 class BaseUtils:
@@ -130,6 +131,44 @@ class BaseUtils:
             new_label[:, :, 1] += globals()[k] * v[1]
             new_label[:, :, 2] += globals()[k] * v[2]
         return new_label
+
+    def cal_indicators(self, true_pre_list: List[Dict], label_mapping):
+        for i in range(len(true_pre_list)):
+            true_pre_dict = true_pre_list[i]
+            true_lab_arr = copy.deepcopy(true_pre_dict["true_lab_arr"])
+            pre_lab_arr = copy.deepcopy(true_pre_dict["pre_lab_arr"])
+            if true_lab_arr.shape[2] == 1:
+                true_lab_arr = np.squeeze(true_lab_arr, axis=2)
+            elif true_lab_arr.shape[2] == 3:
+                true_lab_arr = self.change_label_3to1(true_lab_arr, label_mapping)
+            if pre_lab_arr.shape[2] == 1:
+                pre_lab_arr = np.squeeze(pre_lab_arr, axis=2)
+            elif pre_lab_arr.shape[2] == 3:
+                pre_lab_arr = self.change_label_3to1(pre_lab_arr, label_mapping)
+
+            confusion_matrix = utils._generate_matrix(
+                true_lab_arr.astype(np.int8),
+                pre_lab_arr.astype(np.int8),
+                num_class=len(label_mapping),
+            )
+            confusion_matrix_all = confusion_matrix_all + confusion_matrix
+            # miou = _Class_IOU(confusion_matrix_all)
+            (miou, iou) = utils.meanIntersectionOverUnion(confusion_matrix_all)
+            fwiou = utils.Frequency_Weighted_Intersection_over_Union(
+                confusion_matrix_all
+            )
+            kappa = utils.Kappa(confusion_matrix_all)
+        acc = np.diag(confusion_matrix_all).sum() / confusion_matrix_all.sum()
+        result_dict = {
+            "confusion_matrix_all": confusion_matrix_all,
+            "iou": iou,
+            "miou": miou,
+            "fwiou": fwiou,
+            "kappa": kappa,
+            "acc": acc,
+        }
+        result_dict = json.dumps(result_dict, indent=4)
+        print(result_dict)
 
     def run(self):
         raise NotImplementedError
