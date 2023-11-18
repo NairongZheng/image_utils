@@ -4,6 +4,8 @@ import copy
 import json
 import math
 from tqdm import tqdm
+from PIL import Image
+import cv2
 from typing import List, Dict
 from config import Config
 import utils
@@ -169,6 +171,18 @@ class BaseUtils:
         }
         result_dict = json.dumps(result_dict, indent=4)
         print(result_dict)
+
+    def image_with_mask(self, image_path, label_path, save_path, rate):
+        # image = cv2.imread(image_path)
+
+        # 图像太大的画，cv2没办法打开，就用PIL
+        image = Image.open(image_path)
+        image = np.asarray(image)
+        image = image[:, :, ::-1]
+        label = cv2.imread(label_path)
+        combine = cv2.addWeighted(image, 0.7, label, 0.3, 0)
+        cv2.imwrite(save_path, combine)
+        pass
 
     def run(self):
         raise NotImplementedError

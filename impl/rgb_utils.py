@@ -154,6 +154,14 @@ class RGBUtils(BaseUtils):
         self.cal_indicators(true_pre_list, self.conf.vars.label_mapping)
         return
 
+    def run_task_6_func(self):
+        image_path = self.conf.vars.image_path
+        label_path = self.conf.vars.label_path
+        save_path = self.conf.vars.save_path
+        rate = self.conf.vars.rate
+        self.image_with_mask(image_path, label_path, save_path, rate)
+        return
+
     def run(self):
         """
         run函数, 运行入口

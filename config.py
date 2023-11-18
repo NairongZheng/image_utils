@@ -31,6 +31,7 @@ class Config:
             3: 三通道转单通道
             4: 单通道转三通道
             5: 计算iou等语义分割评价指标
+            6: 标签贴到图像
         """
         self.image_type: str = "rgb"  # 可选rgb/hyper
         self.task_type: int = 1
@@ -95,6 +96,20 @@ class Config:
         }
         return para_dict
 
+    def get_task_6_para(self):
+        """
+        image_path: 图像路径
+        label_path: 标签路径
+
+        """
+        para_dict = {
+            "image_path": r"",
+            "label_path": r"",
+            "save_path": r"",
+            "rate": 0.3,
+        }
+        return para_dict
+
     def reset(self):
         """
         获取本次任务需要用到的参数
@@ -106,20 +121,23 @@ class Config:
             1: "切图",
         }
         vars = Variables()
+        self.check_task(self.task_type)
         self._get_para(self.task_type, vars)
         return vars
 
-    def _get_para(self, task_type: int, vars: Variables):
-        """
-        根据不同的task_type读取不同的参数
-        并存放到Variables
-        """
+    def check_task(self, task_type):
         if task_type not in self.id_task_dict:
             min_ = min(self.id_task_dict.keys())
             max_ = max(self.id_task_dict.keys())
             assert (
                 task_type >= min_ and task_type <= max_
             ), f"task type only support from {min_} to {max_}"
+
+    def _get_para(self, task_type: int, vars: Variables):
+        """
+        根据不同的task_type读取不同的参数
+        并存放到Variables
+        """
         get_para_func = getattr(self, f"get_task_{task_type}_para")
         self.para_dicit: dict = get_para_func()
         for key, val in self.para_dicit.items():
