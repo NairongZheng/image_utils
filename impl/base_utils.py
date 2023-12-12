@@ -3,13 +3,13 @@ import os
 import copy
 import json
 import math
-import logging
 from tqdm import tqdm
 from PIL import Image
 import cv2
 from typing import List, Dict
 from config import Config
 from impl import utils
+from impl.logger_utils import logger
 
 
 class BaseUtils:
@@ -190,6 +190,5 @@ class BaseUtils:
 
     def print(self, conf: Config):
         print_para = json.dumps(conf.para_dicit, indent=4)
-        logging.info("*" * 50)
-        logging.info(f"当前任务是:{conf.id_task_dict[conf.task_type]}\n参数设置是:\n{print_para}")
-        logging.info("*" * 50)
+        logger.info(f"当前任务是:{conf.task_type}-{conf.id_task_dict[conf.task_type]}")
+        logger.info(f"参数设置是:\n{print_para}")

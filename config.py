@@ -129,9 +129,10 @@ class Config:
         if task_type not in self.id_task_dict:
             min_ = min(self.id_task_dict.keys())
             max_ = max(self.id_task_dict.keys())
-            assert (
-                task_type >= min_ and task_type <= max_
-            ), f"task type only support from {min_} to {max_}"
+            raise Exception(f"task type only support from {min_} to {max_}")
+            # assert (
+            #     task_type >= min_ and task_type <= max_
+            # ), f"task type only support from {min_} to {max_}"
 
     def _get_para(self, task_type: int, vars: Variables):
         """
