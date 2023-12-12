@@ -3,9 +3,11 @@ author:damonzheng
 func:image utils
 date:20231107
 """
+import logging
 from config import conf
 from impl.rgb_utils import RGBUtils
 from impl.hyper_utils import HyperUtils
+from impl.logger_utils import Logger
 
 
 class MyClass:
@@ -13,6 +15,7 @@ class MyClass:
         self.conf = conf
         self.rgb_func = RGBUtils(self.conf)
         self.hyper_func = HyperUtils(self.conf)
+        self.logger = Logger()
 
     def run(self):
         if self.conf.image_type == "rgb":
