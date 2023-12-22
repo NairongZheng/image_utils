@@ -33,7 +33,7 @@ RUN \
     && source activate dev \
     && pip3 install torch torchvision torchaudio -i https://pypi.tuna.tsinghua.edu.cn/simple \
     && pip3 install tqdm yacs opencv-python -i https://pypi.tuna.tsinghua.edu.cn/simple \
-    && pip3 install opencv-python-headless \
+    && pip3 install opencv-python-headless -i https://pypi.tuna.tsinghua.edu.cn/simple \
     && conda install linux-64_gdal-2.4.4-py38hfe926b7_1.tar.bz2 \
     && conda install gdal \
     # 清理
@@ -49,7 +49,7 @@ RUN \
 #     && source activate dev \
 #     && pip3 install torch torchvision torchaudio -i https://pypi.tuna.tsinghua.edu.cn/simple \
 #     && pip3 install tqdm yacs opencv-python -i https://pypi.tuna.tsinghua.edu.cn/simple \
-#     && pip3 install opencv-python-headless \
+#     && pip3 install opencv-python-headless -i https://pypi.tuna.tsinghua.edu.cn/simple \
 #     && conda install linux-64_gdal-2.4.4-py38hfe926b7_1.tar.bz2 \
 #     && conda install gdal \
 #     # 清理
