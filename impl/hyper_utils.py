@@ -5,7 +5,7 @@ import gdal
 import osr
 from config import Config
 from impl.base_utils import BaseUtils
-from impl.logger_utils import logger
+from utils.logger import logger
 
 
 class HyperUtils(BaseUtils):

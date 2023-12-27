@@ -1,0 +1,40 @@
+image_type: rgb
+task_type: 0
+
+task_0:
+  image_path: ""
+  save_path: ""
+  rate: 0.3
+
+task_1:
+  image_path: ""
+  save_path: ""
+  size: 255
+  stride: 12
+  pad_zero: null
+
+task_2:
+  image_path: ""
+  save_path: ""
+
+task_3:
+  image_path: ""
+  save_path: ""
+  extra:
+    label_mapping: { 0: [2, 3, 4] }
+
+task_4:
+  image_path: ""
+  save_path: ""
+  extra:
+    label_mapping: { 0: [2, 3, 4] }
+
+task_5:
+  true_label_path: ""
+  pre_label_path: ""
+
+task_6:
+  image_path: ""
+  label_path: ""
+  save_path: ""
+  rate: ""

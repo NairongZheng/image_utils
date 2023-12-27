@@ -9,7 +9,7 @@ import cv2
 from typing import List, Dict
 from config import Config
 from impl import utils
-from impl.logger_utils import logger
+from utils.logger import logger
 
 
 class BaseUtils:
