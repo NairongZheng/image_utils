@@ -1,5 +1,5 @@
 image_type: rgb
-task_type: 0
+task_type: 1
 
 task_0:
   image_path: ""
@@ -20,14 +20,34 @@ task_2:
 task_3:
   image_path: ""
   save_path: ""
-  extra:
-    label_mapping: { 0: [2, 3, 4] }
+  label_mapping:
+    {
+      "water": [0, 0, 255],
+      "baresoil": [139, 0, 0],
+      "road": [83, 134, 139],
+      "industry": [255, 0, 0],
+      "vegetation": [0, 255, 0],
+      "residential": [205, 173, 0],
+      "plantingarea": [139, 105, 20],
+      "other": [178, 34, 34],
+      "farms": [0, 139, 139],
+    }
 
 task_4:
   image_path: ""
   save_path: ""
-  extra:
-    label_mapping: { 0: [2, 3, 4] }
+  label_mapping:
+    {
+      "water": [0, 0, 255],
+      "baresoil": [139, 0, 0],
+      "road": [83, 134, 139],
+      "industry": [255, 0, 0],
+      "vegetation": [0, 255, 0],
+      "residential": [205, 173, 0],
+      "plantingarea": [139, 105, 20],
+      "other": [178, 34, 34],
+      "farms": [0, 139, 139],
+    }
 
 task_5:
   true_label_path: ""

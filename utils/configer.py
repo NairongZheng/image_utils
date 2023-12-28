@@ -1,12 +1,25 @@
+"""
+author:damonzheng
+func:这是一个很丑陋的config, 但是没人会看, hhh
+date:20231228
+"""
+import os
 import argparse
 import yaml
-import utils
-import os
+import json
 from pathlib import Path
 from yacs.config import CfgNode as CN
+from utils.utils import namespace2dict, dict2namespace
+from utils.logger import logger
 
 
 class DefaultSet:
+    """
+    没用到这玩意
+    一般是深度学习配置参数用
+    这个image_utils比较简单, 没必要
+    """
+
     def __init__(self):
         self._C = self.set_default()
 
@@ -50,7 +63,7 @@ class DefaultSet:
         _C.task_6.label_path = None
         _C.task_6.save_path = None
         _C.task_6.rate = None
-        
+
         return _C
 
     def update_config(self, cfg, args):
@@ -63,29 +76,62 @@ class DefaultSet:
 class ArgsParser:
     def __init__(self):
         # 默认配置参数
-        self.default_set = DefaultSet()
-        self.default_para = self.default_set._C
-        self.parse_args()
+        # self.default_set = DefaultSet()
+        # self.default_para = self.default_set._C
+        self.args = self.parse_args()
 
     def parse_args(self):
         cur_file_path = Path(__file__).absolute()
         parser = argparse.ArgumentParser(description="too lazy to name")
         parser.add_argument(
-            "--cfg", help="the path of config.yaml", default=os.path.join(cur_file_path.parent.parent, "config.yaml")
+            "--cfg",
+            help="the path of config.yaml",
+            default=os.path.join(cur_file_path.parent.parent, "config.yaml"),
         )
         args = parser.parse_args()
-        # # 其实这么加载就行, 省的麻烦
-        # with open(args.cfg, "r") as f:
-        #     config_yaml = yaml.load(f, Loader=yaml.FullLoader)
-        self.default_set.update_config(self.default_para, args)
+        with open(args.cfg, "r") as f:
+            config_dict = yaml.load(f, Loader=yaml.FullLoader)
+        config_namespace = dict2namespace(config_dict)
+        return config_namespace
 
 
 class Config:
     def __init__(self):
-        self.argsparser = ArgsParser()
-        task_type = self.argsparser.default_para.task_type
-        para = getattr(self.argsparser.default_para, f"task_{task_type}")
-        pass
+        self.yaml_args = ArgsParser().args
+        self.get_task_para()
+
+    def check_task(self, task_type):
+        self.idx_task_dict = {
+            0: "对图像进行截断",
+            1: "切图",
+        }
+        logger.info(
+            f"supported task dict:\n{json.dumps(self.idx_task_dict, indent=4, ensure_ascii=False)}"
+        )
+        if task_type not in self.idx_task_dict:
+            min_ = min(self.idx_task_dict.keys())
+            max_ = max(self.idx_task_dict.keys())
+            raise Exception(f"task type only support from {min_} to {max_}")
+
+    def get_task_para(self):
+        image_type = self.yaml_args.image_type
+        task_type = self.yaml_args.task_type
+        try:
+            self.check_task(task_type)
+        except Exception as e:
+            logger.exception(e)
+            quit()
+        self.para = getattr(self.yaml_args, f"task_{task_type}")
+        setattr(self.para, "image_type", image_type)
+        setattr(self.para, "task_type", task_type)
+        if "label_mapping" in self.para:
+            label_mapping = self.para.label_mapping
+            label_mapping = namespace2dict(label_mapping)
+            self.para.label_mapping = label_mapping
+        logger.info(f"当前任务是:{task_type}-{self.idx_task_dict[task_type]}")
+        logger.info(
+            f"参数设置是:\n{json.dumps(namespace2dict(self.para), indent=4, ensure_ascii=False)}"
+        )
 
 
-conf = Config()
+conf = Config().para

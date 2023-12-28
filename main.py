@@ -4,7 +4,8 @@ func:image utils
 date:20231107
 """
 import logging
-from config import conf
+# from config import conf
+from utils.configer import conf
 from impl.rgb_utils import RGBUtils
 from impl.hyper_utils import HyperUtils
 
@@ -17,10 +18,8 @@ class MyClass:
 
     def run(self):
         if self.conf.image_type == "rgb":
-            self.rgb_func.print(self.conf)
             self.rgb_func.run()
         elif self.conf.image_type == "hyper":
-            self.hyper_func.print(self.conf)
             self.hyper_func.run()
         else:
             raise "image type error!"

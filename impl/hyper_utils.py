@@ -3,7 +3,7 @@ import numpy as np
 import json
 import gdal
 import osr
-from config import Config
+from utils.configer import Config
 from impl.base_utils import BaseUtils
 from utils.logger import logger
 
@@ -137,10 +137,10 @@ class HyperUtils(BaseUtils):
         """
         任务7: 读取高光谱并获得经纬度等信息
         """
-        all_image_name = self.read_path(self.conf.vars.image_path)
+        all_image_name = self.read_path(self.conf.image_path)
         info = {}
         for i, img_name in all_image_name:
-            img_path = os.path.join(self.conf.vars.image_path, img_name)
+            img_path = os.path.join(self.conf.image_path, img_name)
             img, height, width, band_num, geo, proj = self.read_image(img_path)
             # 计算图像四个点的地理坐标
             left_up = (geo[0], geo[3])
@@ -173,29 +173,29 @@ class HyperUtils(BaseUtils):
         logger.info(info)
 
     def run_task_8_func(self):
-        all_image_name = self.read_path(self.conf.vars.image_path)
+        all_image_name = self.read_path(self.conf.image_path)
         for i, img_name in all_image_name:
-            img_path = os.path.join(self.conf.vars.image_path, img_name)
+            img_path = os.path.join(self.conf.image_path, img_name)
             img, height, width, band_num, geo, proj = self.read_image(img_path)
             img = self.hyper2numpy(img, height, width, band_num)
-            img = self.truncation(img, self.conf.vars.rate)
-            save_path = os.path.join(self.conf.vars.save_path, img_name)
+            img = self.truncation(img, self.conf.rate)
+            save_path = os.path.join(self.conf.save_path, img_name)
             self.numpy2hyper_save(img, height, width, save_path, geo, proj)
         return
 
     def run_task_9_func(self):
-        all_image_name = self.read_path(self.conf.vars.image_path)
+        all_image_name = self.read_path(self.conf.image_path)
         for i, img_name in all_image_name:
             img_ext = os.path.splitext(img_name)[1]
-            img_path = os.path.join(self.conf.vars.image_path, img_name)
+            img_path = os.path.join(self.conf.image_path, img_name)
             img, height, width, band_num, geo, proj = self.read_image(img_path)
             img = self.hyper2numpy(img, height, width, band_num)
             # 计算padding或者裁剪的尺寸
             row, col, pad_img = self.pad_image(
                 img.shape,
-                self.conf.vars.size,
-                self.conf.vars.stride,
-                self.conf.vars.pad_zero,
+                self.conf.size,
+                self.conf.stride,
+                self.conf.pad_zero,
             )
             # cut
             img_dict = self.cut_image(
@@ -204,8 +204,8 @@ class HyperUtils(BaseUtils):
                 img_ext,
                 row,
                 col,
-                self.conf.vars.size,
-                self.conf.vars.stride,
+                self.conf.size,
+                self.conf.stride,
             )
             # 高光谱要多一步计算每张小图的仿射矩阵和投影信息
             img_geo_proj_dict = self.get_geo_and_proj(
@@ -214,18 +214,18 @@ class HyperUtils(BaseUtils):
                 img_ext,
                 row,
                 col,
-                self.conf.vars.size,
-                self.conf.vars.stride,
+                self.conf.size,
+                self.conf.stride,
             )
             for small_img_name, small_img_arr in img_dict.items():
-                save_path = os.path.join(self.conf.vars.save_path, small_img_name)
-                size = self.conf.vars.size
+                save_path = os.path.join(self.conf.save_path, small_img_name)
+                size = self.conf.size
                 geo, proj = img_geo_proj_dict[small_img_name]
                 self.numpy2hyper_save(small_img_arr, size, size, save_path, geo, proj)
         return
 
     def run_task_10_func(self):
-        small_img_path = self.conf.vars.image_path
+        small_img_path = self.conf.image_path
         img_name = os.listdir(small_img_path)
         img_name.sort()
         small_img_ext = os.path.splitext(img_name[0])[1]
@@ -265,7 +265,7 @@ class HyperUtils(BaseUtils):
                     k += 1
                     to_image[row_start:row_end, col_start:col_end, :] = small_pic
             save_img_name = "{}{}".format(i + 1, small_img_ext)
-            save_path = os.path.join(self.conf.vars.save_path, save_img_name)
+            save_path = os.path.join(self.conf.save_path, save_img_name)
             self.numpy2hyper_save(to_image, big_h, big_w, save_path, geo, proj)
         return
 

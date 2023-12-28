@@ -7,7 +7,7 @@ from tqdm import tqdm
 from PIL import Image
 import cv2
 from typing import List, Dict
-from config import Config
+from utils.configer import Config
 from impl import utils
 from utils.logger import logger
 
@@ -187,8 +187,3 @@ class BaseUtils:
 
     def run(self):
         raise NotImplementedError
-
-    def print(self, conf: Config):
-        print_para = json.dumps(conf.para_dicit, indent=4)
-        logger.info(f"当前任务是:{conf.task_type}-{conf.id_task_dict[conf.task_type]}")
-        logger.info(f"参数设置是:\n{print_para}")

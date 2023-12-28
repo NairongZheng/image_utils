@@ -3,7 +3,7 @@ import numpy as np
 import os
 import copy
 from tqdm import tqdm
-from config import Config
+from utils.configer import Config
 from impl.base_utils import BaseUtils
 
 
@@ -27,18 +27,18 @@ class RGBUtils(BaseUtils):
         保存图片
         """
         img = Image.fromarray(np.uint8(img))
-        save_path = os.path.join(self.conf.vars.save_path, img_path)
+        save_path = os.path.join(self.conf.save_path, img_path)
         img.save(save_path)
 
     def run_task_0_func(self):
         """
         任务0: 将图像截断拉伸
         """
-        all_image_name = self.read_path(self.conf.vars.image_path)
+        all_image_name = self.read_path(self.conf.image_path)
         for i, img_name in all_image_name:
-            img_path = os.path.join(self.conf.vars.image_path, img_name)
+            img_path = os.path.join(self.conf.image_path, img_name)
             img = self.read_image(img_path)
-            img = self.truncation(img, self.conf.vars.rate)
+            img = self.truncation(img, self.conf.rate)
             self.save_image(img, img_name)
         return
 
@@ -46,16 +46,16 @@ class RGBUtils(BaseUtils):
         """
         任务1: 切图
         """
-        all_image_name = self.read_path(self.conf.vars.image_path)
+        all_image_name = self.read_path(self.conf.image_path)
         for i, img_name in all_image_name:
             img_ext = os.path.splitext(img_name)[1]
-            img_path = os.path.join(self.conf.vars.image_path, img_name)
+            img_path = os.path.join(self.conf.image_path, img_name)
             img = self.read_image(img_path)
             row, col, pad_img = self.pad_image(
                 img.shape,
-                self.conf.vars.size,
-                self.conf.vars.stride,
-                self.conf.vars.pad_zero,
+                self.conf.size,
+                self.conf.stride,
+                self.conf.pad_zero,
             )
             img_dict = self.cut_image(
                 i,
@@ -63,8 +63,8 @@ class RGBUtils(BaseUtils):
                 img_ext,
                 row,
                 col,
-                self.conf.vars.size,
-                self.conf.vars.stride,
+                self.conf.size,
+                self.conf.stride,
             )
 
             for small_img_name, small_img_arr in img_dict.items():
@@ -75,7 +75,7 @@ class RGBUtils(BaseUtils):
         """
         任务2: 拼图
         """
-        small_img_path = self.conf.vars.image_path
+        small_img_path = self.conf.image_path
         img_name = os.listdir(small_img_path)
         img_name.sort()
         small_img_ext = os.path.splitext(img_name[0])[1]
@@ -115,50 +115,50 @@ class RGBUtils(BaseUtils):
         """
         任务3: 标签三通道转单通道
         """
-        all_label_names = os.listdir(self.conf.vars.image_path)
+        all_label_names = os.listdir(self.conf.image_path)
         for label_name in all_label_names:
-            lab = self.read_image(os.path.join(self.conf.vars.image_path, label_name))
+            lab = self.read_image(os.path.join(self.conf.image_path, label_name))
             lab = self.change_label_3to1(
-                lab, copy.deepcopy(self.conf.vars.label_mapping)
+                lab, copy.deepcopy(self.conf.label_mapping)
             )
-            self.save_image(lab, os.path.join(self.conf.vars.save_path, label_name))
+            self.save_image(lab, os.path.join(self.conf.save_path, label_name))
         return
 
     def run_task_4_func(self):
         """
         任务4: 标签单通道转三通道
         """
-        all_label_names = os.listdir(self.conf.vars.image_path)
+        all_label_names = os.listdir(self.conf.image_path)
         for label_name in all_label_names:
-            lab = self.read_image(os.path.join(self.conf.vars.image_path, label_name))
+            lab = self.read_image(os.path.join(self.conf.image_path, label_name))
             lab = self.change_label_1to3(
-                lab, copy.deepcopy(self.conf.vars.label_mapping)
+                lab, copy.deepcopy(self.conf.label_mapping)
             )
-            self.save_image(lab, os.path.join(self.conf.vars.save_path, label_name))
+            self.save_image(lab, os.path.join(self.conf.save_path, label_name))
         return
 
     def run_task_5_func(self):
         true_pre_list = []
-        true_lab_names = os.listdir(self.conf.vars.true_label_path).sort()
-        pre_lab_names = os.listdir(self.conf.vars.pre_label_path).sort()
+        true_lab_names = os.listdir(self.conf.true_label_path).sort()
+        pre_lab_names = os.listdir(self.conf.pre_label_path).sort()
         for i in range(len(true_lab_names)):
             true_lab_arr = self.read_image(
-                os.path.join(self.conf.vars.true_label_path, true_lab_names[i])
+                os.path.join(self.conf.true_label_path, true_lab_names[i])
             )
             pre_lab_arr = self.read_image(
-                os.path.join(self.conf.vars.pre_label_path, pre_lab_names[i])
+                os.path.join(self.conf.pre_label_path, pre_lab_names[i])
             )
             true_pre_list.append(
                 {"true_lab_arr": true_lab_arr, "pre_lab_arr": pre_lab_arr}
             )
-        self.cal_indicators(true_pre_list, self.conf.vars.label_mapping)
+        self.cal_indicators(true_pre_list, self.conf.label_mapping)
         return
 
     def run_task_6_func(self):
-        image_path = self.conf.vars.image_path
-        label_path = self.conf.vars.label_path
-        save_path = self.conf.vars.save_path
-        rate = self.conf.vars.rate
+        image_path = self.conf.image_path
+        label_path = self.conf.label_path
+        save_path = self.conf.save_path
+        rate = self.conf.rate
         self.image_with_mask(image_path, label_path, save_path, rate)
         return
 
