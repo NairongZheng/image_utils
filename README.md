@@ -11,4 +11,5 @@
 > 对环境配置感兴趣的可以看看[博客](https://blog.csdn.net/a264672/article/details/134770104)
 
 ## 使用
-只需要在`./config.py`的Config类中设置好参数，运行`./main.py`即可。具体去看Config类初始化的注释，很简单，不赘述。
+1. 只需要在`./config.yaml`中设置好参数，运行`./main.py`即可。具体去看`./config.yaml`的注释，很简单，不赘述。
+2. 使用有问题、有报错或者需要新加别的功能，可以发邮件 (damonzheng46@gmail.com) 联系。35岁之前还健在的话会回。
