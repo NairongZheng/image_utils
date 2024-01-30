@@ -1,13 +1,22 @@
-from PIL import Image
-import numpy as np
+"""
+author:damonzheng
+func:rgb处理工具类
+date:20231108
+"""
 import os
 import copy
+from PIL import Image
+import numpy as np
 from tqdm import tqdm
 from utils.configer import Config
 from impl.base_utils import BaseUtils
-
+from utils.logger import logger
+# from utils.bar import show_bar
 
 class RGBUtils(BaseUtils):
+    """
+    处理rgb图像(sar也当作是)
+    """
     def __init__(self, conf: Config):
         super(RGBUtils, self).__init__()
         self.conf = conf
@@ -30,29 +39,31 @@ class RGBUtils(BaseUtils):
         save_path = os.path.join(self.conf.save_path, img_path)
         img.save(save_path)
 
+    # @show_bar
     def run_task_0_func(self):
         """
-        任务0: 将图像截断拉伸
+        任务0: 将图像截断拉伸, 一般只有SAR图像, 如高分三地理信息编码之后想转成"普通图像"用的
         """
         all_image_name = self.read_path(self.conf.image_path)
-        for i, img_name in all_image_name:
+        for img_name in tqdm(all_image_name, total=len(all_image_name)):
             img_path = os.path.join(self.conf.image_path, img_name)
             img = self.read_image(img_path)
             img = self.truncation(img, self.conf.rate)
             self.save_image(img, img_name)
-        return
+        return {"bar_len": len(all_image_name)} # 为了配合装饰器显示进度条
 
+    # @show_bar
     def run_task_1_func(self):
         """
         任务1: 切图
         """
         all_image_name = self.read_path(self.conf.image_path)
-        for i, img_name in all_image_name:
+        for i, img_name in tqdm(enumerate(all_image_name), total=len(all_image_name)):
             img_ext = os.path.splitext(img_name)[1]
             img_path = os.path.join(self.conf.image_path, img_name)
             img = self.read_image(img_path)
             row, col, pad_img = self.pad_image(
-                img.shape,
+                img,
                 self.conf.size,
                 self.conf.stride,
                 self.conf.pad_zero,
@@ -69,8 +80,9 @@ class RGBUtils(BaseUtils):
 
             for small_img_name, small_img_arr in img_dict.items():
                 self.save_image(small_img_arr, small_img_name)
-        return
+        # return {"bar_len": len(all_image_name)} # 为了配合装饰器显示进度条
 
+    # @show_bar
     def run_task_2_func(self):
         """
         任务2: 拼图
@@ -93,7 +105,7 @@ class RGBUtils(BaseUtils):
         for i in range(0, big_pic_num):
             k = 0
             small_pic_num_2 = len(znr[i])
-            h, w, c = Image.open(os.path.join(small_img_path, znr[i][0])).size
+            h, w, c = np.array(Image.open(os.path.join(small_img_path, znr[i][0]))).shape
             row = int(znr[i][small_pic_num_2 - 1].split("row_")[0].split("_")[1])
             col = int(znr[i][small_pic_num_2 - 1].split("row_")[1].split("col")[0])
             to_image = np.zeros((row * h, col * w, c), dtype=np.uint8)
@@ -109,7 +121,7 @@ class RGBUtils(BaseUtils):
                     to_image[row_start:row_end, col_start:col_end, :] = small_pic
             save_img_name = "{}{}".format(i + 1, small_img_ext)
             self.save_image(to_image, save_img_name)
-        return
+        # return {"bar_len": len(img_name)} # 为了配合装饰器显示进度条
 
     def run_task_3_func(self):
         """
@@ -167,4 +179,6 @@ class RGBUtils(BaseUtils):
         run函数, 运行入口
         """
         run_task_func = getattr(self, f"run_task_{self.conf.task_type}_func")
+        logger.info(f" ============== {run_task_func.__name__} is running ============== ")
         run_task_func()
+        logger.info(f" ============== {run_task_func.__name__} finish ============== ")

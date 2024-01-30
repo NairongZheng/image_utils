@@ -74,6 +74,9 @@ class DefaultSet:
 
 
 class ArgsParser:
+    """
+    读取配置参数
+    """
     def __init__(self):
         # 默认配置参数
         # self.default_set = DefaultSet()
@@ -89,41 +92,54 @@ class ArgsParser:
             default=os.path.join(cur_file_path.parent.parent, "config.yaml"),
         )
         args = parser.parse_args()
-        with open(args.cfg, "r") as f:
+        with open(args.cfg, "r", encoding="utf-8") as f:
             config_dict = yaml.load(f, Loader=yaml.FullLoader)
         config_namespace = dict2namespace(config_dict)
         return config_namespace
 
 
 class Config:
+    """
+    根据任务解析配置参数
+    """
     def __init__(self):
         self.yaml_args = ArgsParser().args
         self.get_task_para()
 
-    def check_task(self, task_type):
+    def check_para(self, image_type, task_type):
+        """
+        检查参数设置是否有误, 主要是task_type是否支持
+        """
         self.idx_task_dict = {
-            0: "对图像进行截断",
+            0: "对图像进行截断拉伸归一化",
             1: "切图",
+            2: "拼图",
         }
         logger.info(
-            f"supported task dict:\n{json.dumps(self.idx_task_dict, indent=4, ensure_ascii=False)}"
+            f"本代码当前只支持以下任务:\n{json.dumps(self.idx_task_dict, indent=4, ensure_ascii=False)}"
         )
+        if image_type not in ["rgb", "hyper"]:
+            raise Exception(f"image_type only support rgb or hyper")
         if task_type not in self.idx_task_dict:
             min_ = min(self.idx_task_dict.keys())
             max_ = max(self.idx_task_dict.keys())
-            raise Exception(f"task type only support from {min_} to {max_}")
+            raise Exception(f"task_type only support from {min_} to {max_}")
 
     def get_task_para(self):
+        """
+        args读取的是整个yaml文件, 这边根据task_type再读取所需参数
+        """
         image_type = self.yaml_args.image_type
         task_type = self.yaml_args.task_type
         try:
-            self.check_task(task_type)
+            self.check_para(image_type ,task_type)
         except Exception as e:
             logger.exception(e)
             quit()
         self.para = getattr(self.yaml_args, f"task_{task_type}")
         setattr(self.para, "image_type", image_type)
         setattr(self.para, "task_type", task_type)
+        # 针对label_mapping这个特殊的参数做处理
         if "label_mapping" in self.para:
             label_mapping = self.para.label_mapping
             label_mapping = namespace2dict(label_mapping)
@@ -132,6 +148,7 @@ class Config:
         logger.info(
             f"参数设置是:\n{json.dumps(namespace2dict(self.para), indent=4, ensure_ascii=False)}"
         )
+        return
 
 
 conf = Config().para

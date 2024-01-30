@@ -1,6 +1,11 @@
-import numpy as np
+"""
+author:damonzheng
+func:rgb_utils和hyper_utils的父类
+date:20231108
+"""
 import os
 import copy
+import numpy as np
 import json
 import math
 from tqdm import tqdm
@@ -39,12 +44,12 @@ class BaseUtils:
         img_new = (img_new / np.max(img_new) + 1e-7) * 255.0
         return img_new
 
-    def pad_image(self, raw_img_shape, small_img_size, strides, pad_zero):
+    def pad_image(self, raw_img, small_img_size, strides, pad_zero):
         """
         根据原图尺寸、小图尺寸、步长、是否padding
-        返回处理后可以切的行数、列数、padding后/裁剪后的大图尺寸
+        返回处理后可以切的行数、列数、padding后/裁剪后的大图
         """
-        h, w, c = raw_img_shape
+        h, w, c = raw_img.shape
         row = math.floor((h - small_img_size) / strides) + 1
         col = math.floor((w - small_img_size) / strides) + 1
         row = row + 1 if pad_zero else row
@@ -56,6 +61,11 @@ class BaseUtils:
                 c,
             )
         )
+        pad_h, pad_w, pad_c = pad_img.shape
+        if pad_zero:
+            pad_img[:h, :w, :c] = raw_img
+        else:
+            pad_img = raw_img[:pad_h, :pad_w, :pad_c]
         return row, col, pad_img
 
     def cut_image(
@@ -76,7 +86,7 @@ class BaseUtils:
         cut_res_dict = {}  # key: img_name, value:img_array
 
         row_idx = 1
-        for i in tqdm(range(row), total=row):
+        for i in range(row):
             row_start = i * stride
             row_end = i * stride + size
             col_idx = 1

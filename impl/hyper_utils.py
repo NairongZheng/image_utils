@@ -1,3 +1,8 @@
+"""
+author:damonzheng
+func:hyper处理工具类
+date:20231217
+"""
 import os
 import numpy as np
 import json
@@ -274,4 +279,5 @@ class HyperUtils(BaseUtils):
         run函数, 运行入口
         """
         run_task_func = getattr(self, f"run_task_{self.conf.task_type}_func")
+        logger.info(f"{run_task_func.__name__} is running!")
         run_task_func()
