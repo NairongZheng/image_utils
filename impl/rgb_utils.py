@@ -28,7 +28,7 @@ class RGBUtils(BaseUtils):
         img = Image.open(img_path)
         img = np.asarray(img)
         if len(img.shape) < 3:
-            img = np.expand_dims(copy.deepcopy(img), axis=1)
+            img = np.expand_dims(copy.deepcopy(img), axis=2)
         return img
 
     def save_image(self, img, img_path: str):
@@ -128,7 +128,7 @@ class RGBUtils(BaseUtils):
         任务3: 标签三通道转单通道
         """
         all_label_names = os.listdir(self.conf.image_path)
-        for label_name in all_label_names:
+        for label_name in tqdm(all_label_names, total=len(all_label_names)):
             lab = self.read_image(os.path.join(self.conf.image_path, label_name))
             lab = self.change_label_3to1(
                 lab, copy.deepcopy(self.conf.label_mapping)
@@ -141,19 +141,33 @@ class RGBUtils(BaseUtils):
         任务4: 标签单通道转三通道
         """
         all_label_names = os.listdir(self.conf.image_path)
-        for label_name in all_label_names:
-            lab = self.read_image(os.path.join(self.conf.image_path, label_name))
-            lab = self.change_label_1to3(
-                lab, copy.deepcopy(self.conf.label_mapping)
-            )
-            self.save_image(lab, os.path.join(self.conf.save_path, label_name))
+        try:
+            for label_name in tqdm(all_label_names, total=len(all_label_names)):
+                lab = self.read_image(os.path.join(self.conf.image_path, label_name))
+                lab = self.change_label_1to3(
+                    lab, copy.deepcopy(self.conf.label_mapping)
+                )
+                self.save_image(lab, os.path.join(self.conf.save_path, label_name))
+        except Exception as e:
+            logger.exception(e)
+            quit()
         return
 
     def run_task_5_func(self):
+        """
+        任务5: 语义分割计算一些指标, 包括confusion_matrix_all, iou, miou, fwiou, kappa, acc
+        """
         true_pre_list = []
-        true_lab_names = os.listdir(self.conf.true_label_path).sort()
-        pre_lab_names = os.listdir(self.conf.pre_label_path).sort()
-        for i in range(len(true_lab_names)):
+        try:
+            true_lab_names = sorted(os.listdir(self.conf.true_label_path))
+            pre_lab_names = sorted(os.listdir(self.conf.pre_label_path))
+            if len(true_lab_names) != len(pre_lab_names):
+                raise Exception(f"true_label_num:{len(true_lab_names)}, but pre_label_num:{len(pre_lab_names)}")
+        except Exception as e:
+            logger.exception(e)
+            quit()
+        
+        for i in tqdm(range(len(true_lab_names)), total=len(true_lab_names)):
             true_lab_arr = self.read_image(
                 os.path.join(self.conf.true_label_path, true_lab_names[i])
             )
@@ -163,15 +177,31 @@ class RGBUtils(BaseUtils):
             true_pre_list.append(
                 {"true_lab_arr": true_lab_arr, "pre_lab_arr": pre_lab_arr}
             )
-        self.cal_indicators(true_pre_list, self.conf.label_mapping)
+        result_dict = self.cal_indicators(true_pre_list, self.conf.label_mapping)
+        logger.info(f"计算结果如下:\n{result_dict}")
         return
 
     def run_task_6_func(self):
-        image_path = self.conf.image_path
-        label_path = self.conf.label_path
-        save_path = self.conf.save_path
-        rate = self.conf.rate
-        self.image_with_mask(image_path, label_path, save_path, rate)
+        """
+        任务6: 将标签贴到原图上, 方便比对
+        """
+        try:
+            all_images = sorted(os.listdir(self.conf.image_path))
+            all_labels = sorted(os.listdir(self.conf.label_path))
+            rate = self.conf.rate
+            if len(all_images) != len(all_labels):
+                raise Exception(f"image_num:{len(all_images)}, but label_num:{len(all_labels)}")
+            if rate < 0 or rate > 1:
+                raise Exception(f"rate must be in [0, 1], but your rate is {rate}, 在这个范围外你把控不住")
+        except Exception as e:
+            logger.exception(e)
+            quit()
+        for i in tqdm(range(len(all_images)), total=len(all_labels)):
+            img_name, img_ext = all_images[i].split(".")
+            img_path = os.path.join(self.conf.image_path, all_images[i])
+            lab_path = os.path.join(self.conf.label_path, all_labels[i])
+            save_path = os.path.join(self.conf.save_path, img_name + ".jpg")
+            self.image_with_mask(img_path, lab_path, save_path, rate)
         return
 
     def run(self):

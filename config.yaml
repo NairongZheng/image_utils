@@ -1,5 +1,5 @@
 image_type: rgb # 可选:rgb/hyper(每个task会注明用哪个)
-task_type: 1  # 可选:
+task_type: 6  # 可选:
 
 task_0: # rgb
   # 功能: 对图像进行截断拉伸归一化. 一般只有SAR图像, 如高分三地理信息编码之后想转成"普通图像"用的, 不要乱用啊
@@ -17,8 +17,8 @@ task_1: # rgb
   # size: 切成的小图大小
   # stride: 切图步长, 决定了要不要重叠
   # pad_zero: 不够整除的部分要丢弃还是补0, 可选true/false
-  image_path: D:\code\image_utils\example\SAR
-  save_path: D:\code\image_utils\example\tmp
+  image_path: D:\code\image_utils\example\label
+  save_path: D:\code\image_utils\example\tmp2
   size: 200
   stride: 200
   pad_zero: true
@@ -30,44 +30,73 @@ task_2: # rgb
   image_path: D:\code\image_utils\example\tmp
   save_path: D:\code\image_utils\example\tmp2
 
-task_3:
-  image_path: ""
-  save_path: ""
+task_3: # rgb
+  # 功能: 将三通道标签图像转成单通道, 黑边默认为0
+  # image_path: 待处理图像路径
+  # save_path: 保存路径
+  # lebel_mapping: 按顺序将rgb值为value的像素点转成[0, n-1]. (请严格按照格式写label_mapping, 数字后面的字符随意给, 只是标识好记而已)
+  image_path: D:\code\image_utils\example\label
+  save_path: D:\code\image_utils\example\tmp
   label_mapping:
     {
-      "water": [0, 0, 255],
-      "baresoil": [139, 0, 0],
-      "road": [83, 134, 139],
-      "industry": [255, 0, 0],
-      "vegetation": [0, 255, 0],
-      "residential": [205, 173, 0],
-      "plantingarea": [139, 105, 20],
-      "other": [178, 34, 34],
-      "farms": [0, 139, 139],
+      "0_water": [0, 0, 255],
+      "1_baresoil": [139, 0, 0],
+      "2_road": [83, 134, 139],
+      "3_industry": [255, 0, 0],
+      "4_vegetation": [0, 255, 0],
+      "5_residential": [205, 173, 0],
+      "6_plantingarea": [139, 105, 20],
+      "7_other": [178, 34, 34],
+      "8_farms": [0, 139, 139],
     }
 
-task_4:
-  image_path: ""
-  save_path: ""
+task_4: # rgb
+  # 功能: 将单通道标签图像转成三通道rgb图, 黑边默认转成0对应的rgb, 若有需求可另外处理黑边
+  # image_path: 待处理图像路径
+  # save_path: 保存路径
+  # lebel_mapping: 按顺序将值为[0, n-1]的像素点转成value的rgb值 (请严格按照格式写label_mapping, 数字后面的字符随意给, 只是标识好记而已)
+  image_path: D:\code\image_utils\example\tmp
+  save_path: D:\code\image_utils\example\tmp2
   label_mapping:
     {
-      "water": [0, 0, 255],
-      "baresoil": [139, 0, 0],
-      "road": [83, 134, 139],
-      "industry": [255, 0, 0],
-      "vegetation": [0, 255, 0],
-      "residential": [205, 173, 0],
-      "plantingarea": [139, 105, 20],
-      "other": [178, 34, 34],
-      "farms": [0, 139, 139],
+      "0_water": [0, 0, 255],
+      "1_baresoil": [139, 0, 0],
+      "2_road": [83, 134, 139],
+      "3_industry": [255, 0, 0],
+      "4_vegetation": [0, 255, 0],
+      "5_residential": [205, 173, 0],
+      "6_plantingarea": [139, 105, 20],
+      "7_other": [178, 34, 34],
+      "8_farms": [0, 139, 139],
     }
 
-task_5:
-  true_label_path: ""
-  pre_label_path: ""
+task_5: # rgb
+  # 功能: 语义分割计算一些指标, 包括confusion_matrix_all, iou, miou, fwiou, kappa, acc
+  # true_label_path: 真值标签路径
+  # pre_label_path: 模型测试结果的标签路径
+  # label_mapping: 同上
+  true_label_path: D:\code\image_utils\example\label
+  pre_label_path: D:\code\image_utils\example\tmp
+  label_mapping:
+    {
+      "0_water": [0, 0, 255],
+      "1_baresoil": [139, 0, 0],
+      "2_road": [83, 134, 139],
+      "3_industry": [255, 0, 0],
+      "4_vegetation": [0, 255, 0],
+      "5_residential": [205, 173, 0],
+      "6_plantingarea": [139, 105, 20],
+      "7_other": [178, 34, 34],
+      "8_farms": [0, 139, 139],
+    }
 
-task_6:
-  image_path: ""
-  label_path: ""
-  save_path: ""
-  rate: ""
+task_6: # rgb
+  # 功能: 将标签贴到原图上, 方便比对
+  # image_path: 图像路径
+  # label_path: 标签路径
+  # save_path: 保存路径
+  # rate: 标签透明度, 1为不透明, 0为全透明
+  image_path: D:\code\image_utils\example\SAR
+  label_path: D:\code\image_utils\example\label
+  save_path: D:\code\image_utils\example\tmp
+  rate: 0.3

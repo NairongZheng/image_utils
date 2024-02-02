@@ -121,13 +121,14 @@ class BaseUtils:
         """
         temp = label.copy()
         label_mask = np.zeros((label.shape[0], label.shape[1]))
-        for i, (k, v) in enumerate(label_mapping.items()):
+        for i, (num_cls, rgb) in enumerate(label_mapping.items()):
+            num, cls = num_cls.split("_")
             label_mask[
                 (
-                    ((temp[:, :, 0] == v[0]) & (temp[:, :, 1] == v[1]))
-                    & (temp[:, :, 2] == v[2])
+                    ((temp[:, :, 0] == rgb[0]) & (temp[:, :, 1] == rgb[1]))
+                    & (temp[:, :, 2] == rgb[2])
                 )
-            ] = int(k)
+            ] = int(num)
 
         return label_mask
 
@@ -135,7 +136,10 @@ class BaseUtils:
         """
         单通道转三通道
         """
-        width, height = label.size
+        height, width, c = label.shape
+        if c != 1:
+            raise Exception(f"the input images must be 1 channel, but your images' channel is {c}")
+        label = np.reshape(label, (height, width))
         new_label = np.zeros([height, width, 3])
         for i, (k, v) in enumerate(label_mapping.items()):
             globals()[k] = label == i
@@ -146,6 +150,11 @@ class BaseUtils:
         return new_label
 
     def cal_indicators(self, true_pre_list: List[Dict], label_mapping):
+        """
+        语义分割计算一些指标, 包括confusion_matrix_all, iou, miou, fwiou, kappa, acc
+        """
+        num_class = len(label_mapping)
+        confusion_matrix_all = np.zeros((num_class, num_class))
         for i in range(len(true_pre_list)):
             true_pre_dict = true_pre_list[i]
             true_lab_arr = copy.deepcopy(true_pre_dict["true_lab_arr"])
@@ -173,15 +182,15 @@ class BaseUtils:
             kappa = utils.Kappa(confusion_matrix_all)
         acc = np.diag(confusion_matrix_all).sum() / confusion_matrix_all.sum()
         result_dict = {
-            "confusion_matrix_all": confusion_matrix_all,
-            "iou": iou,
+            "confusion_matrix_all": confusion_matrix_all.tolist(),
+            "iou": iou.tolist(),
             "miou": miou,
             "fwiou": fwiou,
             "kappa": kappa,
             "acc": acc,
         }
         result_dict = json.dumps(result_dict, indent=4)
-        print(result_dict)
+        return result_dict
 
     def image_with_mask(self, image_path, label_path, save_path, rate):
         # image = cv2.imread(image_path)
@@ -191,7 +200,7 @@ class BaseUtils:
         image = np.asarray(image)
         image = image[:, :, ::-1]
         label = cv2.imread(label_path)
-        combine = cv2.addWeighted(image, 0.7, label, 0.3, 0)
+        combine = cv2.addWeighted(image, 1 - rate, label, rate, 0)
         cv2.imwrite(save_path, combine)
         pass
 

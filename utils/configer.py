@@ -114,6 +114,10 @@ class Config:
             0: "对图像进行截断拉伸归一化",
             1: "切图",
             2: "拼图",
+            3: "三通道标签转成单通道",
+            4: "单通道标签转成三通道",
+            5: "计算语义分割指标",
+            6: "标签贴到原图上"
         }
         logger.info(
             f"本代码当前只支持以下任务:\n{json.dumps(self.idx_task_dict, indent=4, ensure_ascii=False)}"
