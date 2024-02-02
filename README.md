@@ -1,6 +1,20 @@
 # 一个糊弄的README
+
+## 支持功能
+目前只支持以下功能, 别的可以去[链接](https://github.com/NairongZheng/utils)里翻...
+```python
+{
+    0: "对图像进行截断拉伸归一化",
+    1: "切图",
+    2: "拼图",
+    3: "三通道标签转成单通道",
+    4: "单通道标签转成三通道",
+    5: "计算语义分割指标",
+    6: "标签贴到原图上"
+}
+```
 ## 环境配置
-1. 如果是在Windows跑（前后处理倒也方便），环境很好弄，不赘述。其中gdal可以从[python whl](https://www.lfd.uci.edu/~gohlke/pythonlibs/)下载。
+1. 如果是在Windows跑（前后处理倒也方便, 推荐这个, 毕竟服务器看图也不方便），环境很好弄，不赘述。其中高光谱用到的gdal可以从[python whl](https://www.lfd.uci.edu/~gohlke/pythonlibs/)下载。
 2. 如果是在Linux跑，可以使用提供的Dockerfile，具体查看（懒得写）`./docker/Dockerfile`。
 3. 注意gdal版本用的是2不是3！！
 4. 如果需要使用Dockerfile配置环境的话，其中一些软件包可通过镜像下载较快：

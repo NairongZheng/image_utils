@@ -5,14 +5,16 @@ date:20231107
 """
 from utils.configer import conf
 from impl.rgb_utils import RGBUtils
-from impl.hyper_utils import HyperUtils
+if conf.image_type == "hyper":
+    from impl.hyper_utils import HyperUtils
 
 
 class MyClass:
     def __init__(self):
         self.conf = conf
         self.rgb_func = RGBUtils(self.conf)
-        self.hyper_func = HyperUtils(self.conf)
+        if self.conf.image_type == "hyper":
+            self.hyper_func = HyperUtils(self.conf)
 
     def run(self):
         if self.conf.image_type == "rgb":

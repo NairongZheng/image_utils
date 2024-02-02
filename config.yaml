@@ -27,8 +27,8 @@ task_2: # rgb
   # 功能: 与本代码task_1相对应, 别的图没办法拼, 因为是用名字来找位置的
   # image_path: 待处理图像路径
   # save_path: 保存路径
-  image_path: D:\code\image_utils\example\tmp
-  save_path: D:\code\image_utils\example\tmp2
+  image_path: D:\code\image_utils\example\tmp2
+  save_path: D:\code\image_utils\example\tmp
 
 task_3: # rgb
   # 功能: 将三通道标签图像转成单通道, 黑边默认为0
