@@ -6,6 +6,7 @@ date:20231217
 import os
 import numpy as np
 import json
+from tqdm import tqdm
 import gdal
 import osr
 from utils.configer import Config
@@ -112,11 +113,11 @@ class HyperUtils(BaseUtils):
         py = geo[3] + col * geo[4] + row * geo[5]
         return (px, py)
 
-    def get_geo_and_proj(self, idx, pad_img, img_ext, row, col, size, stride):
+    def get_geo(self, idx, img_ext, row, col, stride, geo):
         """
-        切图时给计算小图设置geo个proj
+        切图时给计算小图设置geo
         """
-        img_geo_proj_dict = {}
+        img_geo_dict = {}
         row_idx = 1
         for i in range(row):
             row_start = i * stride
@@ -133,10 +134,14 @@ class HyperUtils(BaseUtils):
                     + "col"
                     + img_ext
                 )
-                img_geo_proj_dict[small_name] = (row_start, col_start)
+                if geo:
+                    geo_x, geo_y = self.imagexy2geo(geo, (row_start, col_start))
+                    img_geo_dict[small_name] = (geo_x, geo[1], geo[2], geo_y, geo[4], geo[5])
+                else:
+                    img_geo_dict[small_name] = (0, 0, 0, 0, 0, 0)
                 col_idx += 1
             row_idx += 1
-        return img_geo_proj_dict
+        return img_geo_dict
 
     def run_task_7_func(self):
         """
@@ -144,7 +149,7 @@ class HyperUtils(BaseUtils):
         """
         all_image_name = self.read_path(self.conf.image_path)
         info = {}
-        for i, img_name in all_image_name:
+        for i, img_name in tqdm(enumerate(all_image_name), total=len(all_image_name)):
             img_path = os.path.join(self.conf.image_path, img_name)
             img, height, width, band_num, geo, proj = self.read_image(img_path)
             # 计算图像四个点的地理坐标
@@ -173,13 +178,24 @@ class HyperUtils(BaseUtils):
             info[img_path]["右上角的经纬度"] = right_up_lonlat_
             info[img_path]["左下角的经纬度"] = left_down_lonlat_
             info[img_path]["右下角的经纬度"] = right_down_lonlat_
-        info = json.dumps(info, indent=4)
+        info_log = json.dumps(info, indent=4, ensure_ascii=False)
         logger.info("全部高光谱图片读取完成, 信息如下: ")
-        logger.info(info)
+        logger.info(info_log)
+        
+        # 读取的信息保存成json方便查看
+        log_abs_path = logger.handlers[1].baseFilename
+        log_path, _ = os.path.splitext(log_abs_path)
+        json_save_path = log_path + ".json"
+        with open(json_save_path, "w", encoding="utf-8") as f:
+            json.dump(info, f, indent=4, ensure_ascii=False)
+        logger.info(f"information of {self.conf.image_path} has saved in {json_save_path}")
 
     def run_task_8_func(self):
+        """
+        任务8: 将图像截断拉伸, 一般高光谱不这么做, 顺手写的
+        """
         all_image_name = self.read_path(self.conf.image_path)
-        for i, img_name in all_image_name:
+        for i, img_name in tqdm(enumerate(all_image_name), total=len(all_image_name)):
             img_path = os.path.join(self.conf.image_path, img_name)
             img, height, width, band_num, geo, proj = self.read_image(img_path)
             img = self.hyper2numpy(img, height, width, band_num)
@@ -189,15 +205,18 @@ class HyperUtils(BaseUtils):
         return
 
     def run_task_9_func(self):
+        """
+        任务9: 高光谱切图
+        """
         all_image_name = self.read_path(self.conf.image_path)
-        for i, img_name in all_image_name:
+        for i, img_name in tqdm(enumerate(all_image_name), total=len(all_image_name)):
             img_ext = os.path.splitext(img_name)[1]
             img_path = os.path.join(self.conf.image_path, img_name)
             img, height, width, band_num, geo, proj = self.read_image(img_path)
             img = self.hyper2numpy(img, height, width, band_num)
             # 计算padding或者裁剪的尺寸
             row, col, pad_img = self.pad_image(
-                img.shape,
+                img,
                 self.conf.size,
                 self.conf.stride,
                 self.conf.pad_zero,
@@ -213,25 +232,27 @@ class HyperUtils(BaseUtils):
                 self.conf.stride,
             )
             # 高光谱要多一步计算每张小图的仿射矩阵和投影信息
-            img_geo_proj_dict = self.get_geo_and_proj(
+            img_geo_dict = self.get_geo(
                 i,
-                pad_img,
                 img_ext,
                 row,
                 col,
-                self.conf.size,
                 self.conf.stride,
+                geo,
             )
             for small_img_name, small_img_arr in img_dict.items():
                 save_path = os.path.join(self.conf.save_path, small_img_name)
                 size = self.conf.size
-                geo, proj = img_geo_proj_dict[small_img_name]
+                geo = img_geo_dict[small_img_name]
                 self.numpy2hyper_save(small_img_arr, size, size, save_path, geo, proj)
         return
 
     def run_task_10_func(self):
+        """
+        任务10: 高光谱拼图
+        """
         small_img_path = self.conf.image_path
-        img_name = os.listdir(small_img_path)
+        img_name = self.read_path(small_img_path)
         img_name.sort()
         small_img_ext = os.path.splitext(img_name[0])[1]
 
@@ -257,7 +278,7 @@ class HyperUtils(BaseUtils):
             big_w = col * w
             to_image = np.zeros((big_h, big_w, band_num), dtype=np.uint8)
 
-            for y in range(0, row):
+            for y in tqdm(range(0, row), total=row):
                 row_start = y * h
                 row_end = row_start + h
                 for x in range(0, col):
@@ -279,5 +300,6 @@ class HyperUtils(BaseUtils):
         run函数, 运行入口
         """
         run_task_func = getattr(self, f"run_task_{self.conf.task_type}_func")
-        logger.info(f"{run_task_func.__name__} is running!")
+        logger.info(f" ============== {run_task_func.__name__} is running ============== ")
         run_task_func()
+        logger.info(f" ============== {run_task_func.__name__} finish ============== ")

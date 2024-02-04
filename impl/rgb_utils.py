@@ -88,7 +88,7 @@ class RGBUtils(BaseUtils):
         任务2: 拼图
         """
         small_img_path = self.conf.image_path
-        img_name = os.listdir(small_img_path)
+        img_name = self.read_path(small_img_path)
         img_name.sort()
         small_img_ext = os.path.splitext(img_name[0])[1]
 
@@ -127,7 +127,7 @@ class RGBUtils(BaseUtils):
         """
         任务3: 标签三通道转单通道
         """
-        all_label_names = os.listdir(self.conf.image_path)
+        all_label_names = self.read_path(self.conf.image_path)
         for label_name in tqdm(all_label_names, total=len(all_label_names)):
             lab = self.read_image(os.path.join(self.conf.image_path, label_name))
             lab = self.change_label_3to1(
@@ -140,7 +140,7 @@ class RGBUtils(BaseUtils):
         """
         任务4: 标签单通道转三通道
         """
-        all_label_names = os.listdir(self.conf.image_path)
+        all_label_names = self.read_path(self.conf.image_path)
         try:
             for label_name in tqdm(all_label_names, total=len(all_label_names)):
                 lab = self.read_image(os.path.join(self.conf.image_path, label_name))
@@ -159,8 +159,8 @@ class RGBUtils(BaseUtils):
         """
         true_pre_list = []
         try:
-            true_lab_names = sorted(os.listdir(self.conf.true_label_path))
-            pre_lab_names = sorted(os.listdir(self.conf.pre_label_path))
+            true_lab_names = sorted(self.read_path(self.conf.true_label_path))
+            pre_lab_names = sorted(self.read_path(self.conf.pre_label_path))
             if len(true_lab_names) != len(pre_lab_names):
                 raise Exception(f"true_label_num:{len(true_lab_names)}, but pre_label_num:{len(pre_lab_names)}")
         except Exception as e:
@@ -186,8 +186,8 @@ class RGBUtils(BaseUtils):
         任务6: 将标签贴到原图上, 方便比对
         """
         try:
-            all_images = sorted(os.listdir(self.conf.image_path))
-            all_labels = sorted(os.listdir(self.conf.label_path))
+            all_images = sorted(self.read_path(self.conf.image_path))
+            all_labels = sorted(self.read_path(self.conf.label_path))
             rate = self.conf.rate
             if len(all_images) != len(all_labels):
                 raise Exception(f"image_num:{len(all_images)}, but label_num:{len(all_labels)}")

@@ -111,13 +111,23 @@ class Config:
         检查参数设置是否有误, 主要是task_type是否支持
         """
         self.idx_task_dict = {
+            # rgb(SAR/label)
             0: "对图像进行截断拉伸归一化",
             1: "切图",
             2: "拼图",
             3: "三通道标签转成单通道",
             4: "单通道标签转成三通道",
             5: "计算语义分割指标",
-            6: "标签贴到原图上"
+            6: "标签贴到原图上",
+            # hyper
+            7: "读取高光谱并获得经纬度等信息",
+            8: "高光谱阶段拉伸(一般不用)",
+            9: "高光谱切图",
+            10: "高光谱拼图"
+        }
+        self.imgtype_tasktype_dict = {
+            "rgb": [0, 1, 2, 3, 4, 5, 6],
+            "hyper": [7, 8, 9, 10],
         }
         logger.info(
             f"本代码当前只支持以下任务:\n{json.dumps(self.idx_task_dict, indent=4, ensure_ascii=False)}"
@@ -128,6 +138,8 @@ class Config:
             min_ = min(self.idx_task_dict.keys())
             max_ = max(self.idx_task_dict.keys())
             raise Exception(f"task_type only support from {min_} to {max_}")
+        if task_type not in self.imgtype_tasktype_dict[image_type]:
+            raise Exception(f"image_type does not match task_type, please check, 看看config.yaml吧哥们")
 
     def get_task_para(self):
         """
